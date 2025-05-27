@@ -3,10 +3,10 @@ session_start();
 require '../includes/db.php';
 require '../includes/header.php';
 
-//if (!isset($_SESSION['usuario']) || $_SESSION['rol'] !== 'admin') {
-  //  header("Location: ../views/login.php");
-    //exit;
-//}
+if (!isset($_SESSION['usuario']) || $_SESSION['rol'] !== 'admin') {
+   header("Location: ../views/login.php");
+    exit;
+}
 
 // Consultas para obtener los totales
 $totalAlumnos = $pdo->query("SELECT COUNT(*) FROM alumnos")->fetchColumn();
@@ -70,7 +70,7 @@ $totalUsuarios = $pdo->query("SELECT COUNT(*) FROM usuarios")->fetchColumn();
 </div>
 
 <div class="mt-5">
-    <a href="../logout.php" class="btn btn-danger"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</a>
+    <a href="../views/logout.php" class="btn btn-danger"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</a>
 </div>
 
 <?php require '../includes/footer.php'; ?>

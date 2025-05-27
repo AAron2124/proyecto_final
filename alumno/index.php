@@ -3,77 +3,75 @@ session_start();
 require '../includes/db.php';
 require '../includes/header.php';
 
-if (!isset($_SESSION['usuario']) || $_SESSION['rol'] !== 'alumno') {
+// Verificar que el usuario está logueado y es alumno
+if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'alumno') {
     header("Location: ../views/login.php");
     exit;
 }
 
 $usuario_id = $_SESSION['usuario_id'];
 
-// Obtener información del alumno
-$stmt = $pdo->prepare("SELECT a.id, a.nombre, a.apellido, g.nombre AS grupo, g.nivel
-    FROM alumnos a
-    LEFT JOIN alumnos_grupos ag ON a.id = ag.alumno_id
-    LEFT JOIN grupos g ON ag.grupo_id = g.id
-    WHERE a.usuario_id = ?");
-$stmt->execute([$usuario_id]);
-$alumno = $stmt->fetch();
+// Obtener datos del alumno
+$stmt = $pdo->prepare("SELECT * FROM alumnos WHERE usuario_id = :usuario_id");
+$stmt->execute(['usuario_id' => $usuario_id]);
+$alumno = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$alumno) {
-    echo "<div class='alert alert-danger'>No se encontró el alumno vinculado a este usuario.</div>";
-    require '../includes/footer.php';
+    echo "<div class='alert alert-danger'>No se encontró información del alumno.</div>";
     exit;
 }
 
-$alumno_id = $alumno['id'];
+// Obtener calificaciones del alumno con info de materia, profesor y grupo
+$sql = "
+SELECT c.calificacion, c.fecha, m.nombre AS materia, 
+       CONCAT(p.nombre, ' ', p.apellido) AS profesor, g.nombre AS grupo
+FROM calificaciones c
+JOIN asignaciones a ON c.asignacion_id = a.id
+JOIN materias m ON a.materia_id = m.id
+JOIN profesores p ON a.profesor_id = p.id
+JOIN grupos g ON a.grupo_id = g.id
+WHERE c.alumno_id = :alumno_id
+ORDER BY c.fecha DESC
+";
 
-// Obtener número de materias inscritas
-$stmt = $pdo->prepare("
-    SELECT COUNT(DISTINCT a.materia_id) AS total_materias
-    FROM asignaciones a
-    JOIN calificaciones c ON a.id = c.asignacion_id
-    WHERE c.alumno_id = ?
-");
-$stmt->execute([$alumno_id]);
-$totalMaterias = $stmt->fetchColumn();
+$stmt2 = $pdo->prepare($sql);
+$stmt2->execute(['alumno_id' => $alumno['id']]);
+$calificaciones = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
-<h2 class="mb-4">Bienvenido, <?= htmlspecialchars($alumno['nombre']) ?> 👋</h2>
+<h2>Bienvenido, <?= htmlspecialchars($alumno['nombre']) ?></h2>
 
-<div class="row g-4">
-    <div class="col-md-4">
-        <div class="card border-primary shadow">
-            <div class="card-body">
-                <h5 class="card-title text-primary"><i class="bi bi-book"></i> Materias Inscritas</h5>
-                <p class="card-text fs-4"><?= $totalMaterias ?></p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card border-success shadow">
-            <div class="card-body">
-                <h5 class="card-title text-success"><i class="bi bi-people"></i> Grupo</h5>
-                <p class="card-text fs-5"><?= $alumno['grupo'] ?> (<?= $alumno['nivel'] ?>)</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card border-info shadow">
-            <div class="card-body">
-                <h5 class="card-title text-info"><i class="bi bi-person"></i> Alumno</h5>
-                <p class="card-text"><?= $alumno['nombre'] . ' ' . $alumno['apellido'] ?></p>
-            </div>
-        </div>
-    </div>
-</div>
+<h3>Tus calificaciones</h3>
+<?php if ($calificaciones): ?>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Materia</th>
+            <th>Profesor</th>
+            <th>Grupo</th>
+            <th>Calificación</th>
+            <th>Fecha</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($calificaciones as $cal): ?>
+        <tr>
+            <td><?= htmlspecialchars($cal['materia']) ?></td>
+            <td><?= htmlspecialchars($cal['profesor']) ?></td>
+            <td><?= htmlspecialchars($cal['grupo']) ?></td>
+            <td><?= htmlspecialchars($cal['calificacion']) ?></td>
+            <td><?= htmlspecialchars($cal['fecha']) ?></td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+<?php else: ?>
+<p>No tienes calificaciones registradas.</p>
+<?php endif; ?>
 
-<div class="mt-5 d-flex gap-3">
-    <a href="mis_calificaciones.php" class="btn btn-primary">
-        <i class="bi bi-card-checklist"></i> Ver Calificaciones
-    </a>
-    <a href="../logout.php" class="btn btn-danger">
-        <i class="bi bi-box-arrow-right"></i> Cerrar sesión
-    </a>
+<div class="mt-4">
+   <a href="../views/logout.php" class="btn btn-danger">Cerrar sesión</a>
+
 </div>
 
 <?php require '../includes/footer.php'; ?>

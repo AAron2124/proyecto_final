@@ -1,13 +1,25 @@
+<?php
+if (session_status() == PHP_SESSION_NONE) session_start();
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Gestión Escolar</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Bootstrap 5 CDN -->
+    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Íconos opcionales -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 </head>
-<body class="bg-light">
-    <div class="container mt-5">
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Gestión Escolar</a>
+            <div>
+                <?php if (isset($_SESSION['usuario'])): ?>
+                    <span class="text-white me-3">Hola, <?= htmlspecialchars($_SESSION['usuario']) ?></span>
+                    <a href="/logout.php" class="btn btn-light btn-sm">Cerrar sesión</a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </nav>
+    <div class="container">

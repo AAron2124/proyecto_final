@@ -1,5 +1,5 @@
 <?php
-require '../../includes/conexion.php';
+require '../../includes/db.php';
 
 $materias = $pdo->query("SELECT id, nombre FROM materias")->fetchAll();
 $profesores = $pdo->query("SELECT id, nombre FROM profesores")->fetchAll();

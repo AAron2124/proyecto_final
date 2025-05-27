@@ -1,35 +1,38 @@
 <?php
-//session_start();
+// No vuelvas a llamar session_start si ya está en funciones.php
 require '../includes/db.php';
 require '../includes/funciones.php';
 require '../includes/header.php';
 
-
-
 $error = '';
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $usuario = $_POST['usuario'];
-    $password = $_POST['password'];
+    $usuario = $_POST['usuario'] ?? '';
+    $password = $_POST['password'] ?? '';
 
-//echo ("SELECT * FROM usuarios WHERE username = '$usuario'"); exit;    
+    // Preparar consulta con parámetro para evitar SQL injection
+    $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE username = :usuario");
+    $stmt->execute(['usuario' => $usuario]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    $stmt = $pdo->prepare( "SELECT * FROM usuarios WHERE username = '$usuario'");
-    $stmt->execute();
-    $user = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Compara directamente usuario y contraseña en texto plano
+    if ($user && $password === $user['password']) {
+        // Inicia sesión si no está iniciada (opcional, según tu funciones.php)
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
 
-
-    if ($user && password_verify($password, $user['password'])) {
         $_SESSION['usuario'] = $usuario;
         $_SESSION['rol'] = $user['rol'];
         $_SESSION['usuario_id'] = $user['id'];
 
         if ($user['rol'] === 'admin') {
             header("Location: ../admin/index.php");
+            exit;
         } else {
             header("Location: ../alumno/index.php");
+            exit;
         }
-        exit;
     } else {
         $error = "Usuario o contraseña incorrectos";
     }
@@ -44,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             </div>
             <div class="card-body">
                 <?php if ($error): ?>
-                    <div class="alert alert-danger"><?= $error ?></div>
+                    <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
                 <?php endif; ?>
                 <form method="POST">
                     <div class="mb-3">

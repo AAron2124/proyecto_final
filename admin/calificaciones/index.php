@@ -1,5 +1,5 @@
 <?php
-require '../../includes/conexion.php';
+require '../../includes/db.php';
 
 $sql = "SELECT c.id, a.nombre AS alumno, g.nombre AS grupo, c.calificacion
         FROM calificaciones c

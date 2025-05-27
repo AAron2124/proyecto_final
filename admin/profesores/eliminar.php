@@ -1,5 +1,5 @@
 <?php
-require '../../includes/conexion.php';
+require '../../includes/db.php';
 
 $id = $_GET['id'];
 $stmt = $pdo->prepare("DELETE FROM profesores WHERE id = ?");

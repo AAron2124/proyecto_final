@@ -1,5 +1,5 @@
 <?php
-require '../../includes/conexion.php';
+include '../../includes/conexion.php';
 
 $id = $_GET['id'];
 $stmt = $pdo->prepare("SELECT * FROM alumnos WHERE id = ?");
