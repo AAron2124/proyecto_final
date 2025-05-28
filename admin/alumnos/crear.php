@@ -1,92 +1,83 @@
 <?php
-include '../../includes/db.php';
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
-$mensaje = '';
+include '../../includes/db.php';
+include '../../includes/header.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nombre = $_POST['nombre'];
-    $apellido = $_POST['apellido'];
-    $fecha = $_POST['fecha_nacimiento'];
-    $direccion = $_POST['direccion'];
-    $telefono = $_POST['telefono'];
-    $correo = $_POST['correo'];
-    $usuario = $_POST['usuario'];
-    $contrasena = $_POST['contrasena']; // Texto plano, sin hash
+    $username = trim($_POST['username'] ?? '');
+    $password = $_POST['password'] ?? '';
+    $nombre = trim($_POST['nombre'] ?? '');
+    $apellido = trim($_POST['apellido'] ?? '');
+    $fecha_nacimiento = $_POST['fecha_nacimiento'] ?? null;
+    $direccion = trim($_POST['direccion'] ?? '');
+    $telefono = trim($_POST['telefono'] ?? '');
+    $correo = trim($_POST['correo'] ?? '');
 
-    try {
-        // 1. Insertar el usuario
-        $stmt = $pdo->prepare("INSERT INTO usuarios (username, password, rol) VALUES (?, ?, 'alumno')");
-        $stmt->execute([$usuario, $contrasena]);
-        $usuario_id = $pdo->lastInsertId();
+    if (empty($username) || empty($password) || empty($nombre) || empty($apellido)) {
+        echo "<div class='alert alert-danger'>Nombre de usuario, contraseña, nombre y apellido son obligatorios.</div>";
+    } else {
+        // Verificar si username ya existe
+        $stmt = $pdo->prepare("SELECT id FROM usuarios WHERE username = ?");
+        $stmt->execute([$username]);
+        if ($stmt->fetch()) {
+            echo "<div class='alert alert-danger'>El nombre de usuario ya existe. Elige otro.</div>";
+        } else {
+            // Insertar usuario con password plano
+            $stmt = $pdo->prepare("INSERT INTO usuarios (username, password, rol) VALUES (?, ?, 'alumno')");
+            $stmt->execute([$username, $password]);
+            $usuario_id = $pdo->lastInsertId();
 
-        // 2. Insertar el alumno con la FK
-        $stmt = $pdo->prepare("INSERT INTO alumnos (nombre, apellido, fecha_nacimiento, direccion, telefono, correo, usuario_id) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$nombre, $apellido, $fecha, $direccion, $telefono, $correo, $usuario_id]);
+            // Insertar alumno
+            $sql = "INSERT INTO alumnos (nombre, apellido, fecha_nacimiento, direccion, telefono, correo, usuario_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$nombre, $apellido, $fecha_nacimiento, $direccion, $telefono, $correo, $usuario_id]);
 
-        $mensaje = "Alumno registrado correctamente.";
-    } catch (PDOException $e) {
-        $mensaje = "Error al guardar: " . $e->getMessage();
+            echo "<div class='alert alert-success'>Alumno y usuario creados correctamente.</div>";
+        }
     }
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Agregar Alumno</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-<?php include '../../includes/header.php'; ?>
-<div class="container mt-5">
-    <h2 class="mb-4">Nuevo Alumno</h2>
+<h2 class="mb-4">Agregar Alumno</h2>
 
-    <?php if ($mensaje): ?>
-        <div class="alert <?= str_contains($mensaje, 'Error') ? 'alert-danger' : 'alert-success' ?>">
-            <?= htmlspecialchars($mensaje) ?>
-        </div>
-    <?php endif; ?>
+<form method="post" action="crear.php">
+    <div class="mb-3">
+        <label for="username" class="form-label">Nombre de Usuario *</label>
+        <input type="text" class="form-control" id="username" name="username" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" required>
+    </div>
+    <div class="mb-3">
+        <label for="password" class="form-label">Contraseña *</label>
+        <input type="text" class="form-control" id="password" name="password" value="<?= htmlspecialchars($_POST['password'] ?? '') ?>" required>
+    </div>
+    <div class="mb-3">
+        <label for="nombre" class="form-label">Nombre *</label>
+        <input type="text" class="form-control" id="nombre" name="nombre" value="<?= htmlspecialchars($_POST['nombre'] ?? '') ?>" required>
+    </div>
+    <div class="mb-3">
+        <label for="apellido" class="form-label">Apellido *</label>
+        <input type="text" class="form-control" id="apellido" name="apellido" value="<?= htmlspecialchars($_POST['apellido'] ?? '') ?>" required>
+    </div>
+    <div class="mb-3">
+        <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento</label>
+        <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento" value="<?= $_POST['fecha_nacimiento'] ?? '' ?>">
+    </div>
+    <div class="mb-3">
+        <label for="direccion" class="form-label">Dirección</label>
+        <input type="text" class="form-control" id="direccion" name="direccion" value="<?= htmlspecialchars($_POST['direccion'] ?? '') ?>">
+    </div>
+    <div class="mb-3">
+        <label for="telefono" class="form-label">Teléfono</label>
+        <input type="text" class="form-control" id="telefono" name="telefono" value="<?= htmlspecialchars($_POST['telefono'] ?? '') ?>">
+    </div>
+    <div class="mb-3">
+        <label for="correo" class="form-label">Correo</label>
+        <input type="email" class="form-control" id="correo" name="correo" value="<?= htmlspecialchars($_POST['correo'] ?? '') ?>">
+    </div>
 
-    <form method="post" class="row g-3">
-        <div class="col-md-6">
-            <label class="form-label">Nombre</label>
-            <input name="nombre" class="form-control" required>
-        </div>
-        <div class="col-md-6">
-            <label class="form-label">Apellido</label>
-            <input name="apellido" class="form-control" required>
-        </div>
-        <div class="col-md-6">
-            <label class="form-label">Fecha de nacimiento</label>
-            <input name="fecha_nacimiento" type="date" class="form-control" required>
-        </div>
-        <div class="col-md-6">
-            <label class="form-label">Dirección</label>
-            <input name="direccion" class="form-control">
-        </div>
-        <div class="col-md-6">
-            <label class="form-label">Teléfono</label>
-            <input name="telefono" class="form-control">
-        </div>
-        <div class="col-md-6">
-            <label class="form-label">Correo</label>
-            <input name="correo" type="email" class="form-control">
-        </div>
-        <div class="col-md-6">
-            <label class="form-label">Usuario</label>
-            <input name="usuario" class="form-control" required>
-        </div>
-        <div class="col-md-6">
-            <label class="form-label">Contraseña</label>
-            <input name="contrasena" type="text" class="form-control" required>
-        </div>
-        <div class="col-12">
-            <button type="submit" class="btn btn-success">Guardar Alumno</button>
-            <a href="index.php" class="btn btn-secondary">Cancelar</a>
-        </div>
-    </form>
-</div>
+    <button type="submit" class="btn btn-success">Agregar Alumno</button>
+    <a href="index.php" class="btn btn-secondary">Cancelar</a>
+</form>
+
 <?php include '../../includes/footer.php'; ?>
-</body>
-</html>

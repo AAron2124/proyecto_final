@@ -69,10 +69,17 @@ CREATE TABLE asignaciones (
 -- Calificaciones
 CREATE TABLE calificaciones (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    alumno_id INT,
-    asignacion_id INT,
-    calificacion DECIMAL(5,2),
-    fecha DATE,
-    FOREIGN KEY (alumno_id) REFERENCES alumnos(id),
-    FOREIGN KEY (asignacion_id) REFERENCES asignaciones(id)
+    alumno_id INT NOT NULL,
+    materia_id INT NOT NULL,
+    profesor_id INT NOT NULL,
+    grupo_id INT NOT NULL,
+    calificacion DECIMAL(5,2) NOT NULL,
+    fecha DATE DEFAULT CURRENT_DATE,
+    comentario TEXT NULL,
+    
+    CONSTRAINT fk_calif_alumno FOREIGN KEY (alumno_id) REFERENCES alumnos(id) ON DELETE CASCADE,
+    CONSTRAINT fk_calif_materia FOREIGN KEY (materia_id) REFERENCES materias(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_calif_profesor FOREIGN KEY (profesor_id) REFERENCES profesores(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_calif_grupo FOREIGN KEY (grupo_id) REFERENCES grupos(id) ON DELETE RESTRICT
 );
+

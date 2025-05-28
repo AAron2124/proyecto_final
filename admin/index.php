@@ -4,7 +4,7 @@ require '../includes/db.php';
 require '../includes/header.php';
 
 if (!isset($_SESSION['usuario']) || $_SESSION['rol'] !== 'admin') {
-   header("Location: ../views/login.php");
+    header("Location: ../views/login.php");
     exit;
 }
 
@@ -64,6 +64,15 @@ $totalUsuarios = $pdo->query("SELECT COUNT(*) FROM usuarios")->fetchColumn();
                 <h5 class="card-title">Usuarios</h5>
                 <p class="card-text fs-3"><?= $totalUsuarios ?></p>
                 <a href="usuarios.php" class="btn btn-light btn-sm">Gestionar</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-dark shadow">
+            <div class="card-body">
+                <h5 class="card-title">Calificaciones</h5>
+                <p class="card-text fs-3"><i class="bi bi-journal-text"></i></p>
+                <a href="calificaciones/index.php" class="btn btn-light btn-sm">Gestionar</a>
             </div>
         </div>
     </div>

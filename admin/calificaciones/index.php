@@ -1,38 +1,58 @@
 <?php
+session_start();
 require '../../includes/db.php';
+require '../../includes/header.php';
 
-$sql = "SELECT c.id, a.nombre AS alumno, g.nombre AS grupo, c.calificacion
+if (!isset($_SESSION['usuario']) || $_SESSION['rol'] !== 'admin') {
+    header("Location: ../../views/login.php");
+    exit;
+}
+
+// Consulta para traer todas las calificaciones con info relacionada
+$sql = "SELECT c.id, a.nombre AS alumno_nombre, a.apellido AS alumno_apellido, 
+        m.nombre AS materia_nombre, g.nombre AS grupo_nombre, 
+        p.nombre AS profesor_nombre, p.apellido AS profesor_apellido, 
+        c.calificacion
         FROM calificaciones c
-        JOIN alumnos a ON c.id_alumno = a.id
-        JOIN grupos g ON c.id_grupo = g.id";
+        JOIN alumnos a ON c.alumno_id = a.id
+        JOIN materias m ON c.materia_id = m.id
+        JOIN grupos g ON c.grupo_id = g.id
+        JOIN profesores p ON c.profesor_id = p.id
+        ORDER BY a.apellido, a.nombre, m.nombre";
 
 $stmt = $pdo->query($sql);
-$calificaciones = $stmt->fetchAll();
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Calificaciones</title>
-</head>
-<body>
-<h1>Listado de Calificaciones</h1>
-<a href="crear.php">Agregar Calificación</a>
-<table>
-    <tr>
-        <th>Alumno</th><th>Grupo</th><th>Calificación</th><th>Acciones</th>
-    </tr>
-    <?php foreach ($calificaciones as $c): ?>
+
+<h2 class="mb-4">Lista de Calificaciones</h2>
+
+<a href="create.php" class="btn btn-primary mb-3">Agregar Calificación</a>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
         <tr>
-            <td><?= htmlspecialchars($c['alumno']) ?></td>
-            <td><?= htmlspecialchars($c['grupo']) ?></td>
-            <td><?= htmlspecialchars($c['calificacion']) ?></td>
+            <th>Alumno</th>
+            <th>Materia</th>
+            <th>Grupo</th>
+            <th>Profesor</th>
+            <th>Calificación</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+    <?php while ($row = $stmt->fetch()): ?>
+        <tr>
+            <td><?= htmlspecialchars($row['alumno_nombre'] . ' ' . $row['alumno_apellido']) ?></td>
+            <td><?= htmlspecialchars($row['materia_nombre']) ?></td>
+            <td><?= htmlspecialchars($row['grupo_nombre']) ?></td>
+            <td><?= htmlspecialchars($row['profesor_nombre'] . ' ' . $row['profesor_apellido']) ?></td>
+            <td><?= htmlspecialchars($row['calificacion']) ?></td>
             <td>
-                <a href="editar.php?id=<?= $c['id'] ?>">Editar</a> |
-                <a href="eliminar.php?id=<?= $c['id'] ?>" onclick="return confirmarEliminacion()">Eliminar</a>
+                <a href="edit.php?id=<?= $row['id'] ?>" class="btn btn-warning btn-sm">Editar</a>
+                <!-- Aquí podrías agregar eliminar si quieres -->
             </td>
         </tr>
-    <?php endforeach; ?>
+    <?php endwhile; ?>
+    </tbody>
 </table>
-<script src="../../js/confirmaciones.js"></script>
-</body>
-</html>
+
+<?php require '../../includes/footer.php'; ?>
