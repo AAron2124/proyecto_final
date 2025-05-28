@@ -43,8 +43,13 @@ CREATE TABLE materias (
 CREATE TABLE grupos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(50),
-    nivel VARCHAR(50)
+    nivel VARCHAR(50),
+    materia_id INT NOT NULL,
+    profesor_id INT NOT NULL,
+    CONSTRAINT fk_grupos_materia FOREIGN KEY (materia_id) REFERENCES materias(id),
+    CONSTRAINT fk_grupos_profesor FOREIGN KEY (profesor_id) REFERENCES profesores(id)
 );
+
 
 -- Asociación alumnos-grupos
 CREATE TABLE alumnos_grupos (

@@ -1,77 +1,83 @@
 <?php
-session_start();
+//session_start();
 require '../includes/db.php';
 require '../includes/header.php';
+require '../includes/funciones.php';
 
-// Verificar que el usuario está logueado y es alumno
-if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'alumno') {
-    header("Location: ../views/login.php");
+verificarLogin();
+
+// Asegurar que el usuario está bien definido
+if (!is_array($_SESSION['usuario']) || !isset($_SESSION['usuario']['id'])) {
+    echo "<div class='alert alert-danger'>Sesión inválida. Por favor, vuelve a iniciar sesión.</div>";
+    require '../includes/footer.php';
     exit;
 }
 
-$usuario_id = $_SESSION['usuario_id'];
+$usuario_id = $_SESSION['usuario']['id'];
 
-// Obtener datos del alumno
-$stmt = $pdo->prepare("SELECT * FROM alumnos WHERE usuario_id = :usuario_id");
-$stmt->execute(['usuario_id' => $usuario_id]);
+// Buscar al alumno correspondiente
+$stmt = $pdo->prepare("SELECT id, nombre, apellido FROM alumnos WHERE usuario_id = ?");
+$stmt->execute([$usuario_id]);
 $alumno = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$alumno) {
-    echo "<div class='alert alert-danger'>No se encontró información del alumno.</div>";
+    echo "<div class='alert alert-danger'>No se encontró el alumno vinculado a esta cuenta.</div>";
+    require '../includes/footer.php';
     exit;
 }
 
-// Obtener calificaciones del alumno con info de materia, profesor y grupo
-$sql = "
-SELECT c.calificacion, c.fecha, m.nombre AS materia, 
-       CONCAT(p.nombre, ' ', p.apellido) AS profesor, g.nombre AS grupo
-FROM calificaciones c
-JOIN asignaciones a ON c.asignacion_id = a.id
-JOIN materias m ON a.materia_id = m.id
-JOIN profesores p ON a.profesor_id = p.id
-JOIN grupos g ON a.grupo_id = g.id
-WHERE c.alumno_id = :alumno_id
-ORDER BY c.fecha DESC
-";
-
-$stmt2 = $pdo->prepare($sql);
-$stmt2->execute(['alumno_id' => $alumno['id']]);
-$calificaciones = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+// Obtener calificaciones del alumno
+$sql = "SELECT 
+            c.calificacion, 
+            c.fecha, 
+            c.comentario,
+            m.nombre AS materia,
+            g.nombre AS grupo,
+            p.nombre AS profesor_nombre,
+            p.apellido AS profesor_apellido
+        FROM calificaciones c
+        JOIN materias m ON c.materia_id = m.id
+        JOIN grupos g ON c.grupo_id = g.id
+        JOIN profesores p ON c.profesor_id = p.id
+        WHERE c.alumno_id = ?";
+$stmt = $pdo->prepare($sql);
+$stmt->execute([$alumno['id']]);
+$calificaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
-<h2>Bienvenido, <?= htmlspecialchars($alumno['nombre']) ?></h2>
+<h2 class="mb-4">Bienvenido, <?= htmlspecialchars($alumno['nombre'] . ' ' . $alumno['apellido']) ?></h2>
 
-<h3>Tus calificaciones</h3>
-<?php if ($calificaciones): ?>
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Materia</th>
-            <th>Profesor</th>
-            <th>Grupo</th>
-            <th>Calificación</th>
-            <th>Fecha</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php foreach ($calificaciones as $cal): ?>
-        <tr>
-            <td><?= htmlspecialchars($cal['materia']) ?></td>
-            <td><?= htmlspecialchars($cal['profesor']) ?></td>
-            <td><?= htmlspecialchars($cal['grupo']) ?></td>
-            <td><?= htmlspecialchars($cal['calificacion']) ?></td>
-            <td><?= htmlspecialchars($cal['fecha']) ?></td>
-        </tr>
-        <?php endforeach; ?>
-    </tbody>
-</table>
+<h4 class="mb-3">Tus Calificaciones 📚</h4>
+
+<?php if (count($calificaciones) > 0): ?>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead class="table-primary">
+                <tr>
+                    <th>Materia</th>
+                    <th>Grupo</th>
+                    <th>Profesor</th>
+                    <th>Calificación</th>
+                    <th>Fecha</th>
+                    <th>Comentario</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($calificaciones as $cal): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($cal['materia']) ?></td>
+                        <td><?= htmlspecialchars($cal['grupo']) ?></td>
+                        <td><?= htmlspecialchars($cal['profesor_nombre'] . ' ' . $cal['profesor_apellido']) ?></td>
+                        <td><?= htmlspecialchars($cal['calificacion']) ?></td>
+                        <td><?= htmlspecialchars($cal['fecha']) ?></td>
+                        <td><?= htmlspecialchars($cal['comentario']) ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 <?php else: ?>
-<p>No tienes calificaciones registradas.</p>
+    <div class="alert alert-info">Aún no tienes calificaciones registradas.</div>
 <?php endif; ?>
-
-<div class="mt-4">
-   <a href="../views/logout.php" class="btn btn-danger">Cerrar sesión</a>
-
-</div>
 
 <?php require '../includes/footer.php'; ?>

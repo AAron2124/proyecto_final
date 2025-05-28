@@ -8,134 +8,138 @@ if (!isset($_SESSION['usuario']) || $_SESSION['rol'] !== 'admin') {
     exit;
 }
 
-if (!isset($_GET['id'])) {
+$id = $_GET['id'] ?? null;
+if (!$id) {
     header("Location: index.php");
     exit;
 }
 
-$id = (int)$_GET['id'];
+// Obtener calificación actual
+$stmt = $pdo->prepare("SELECT * FROM calificaciones WHERE id = ?");
+$stmt->execute([$id]);
+$calificacionData = $stmt->fetch();
 
-// Obtener la calificación actual con datos relacionados para mostrar en el formulario
-$sql = "SELECT c.id, c.calificacion, c.fecha, c.alumno_id, c.asignacion_id,
-               a.nombre AS alumno_nombre, a.apellido AS alumno_apellido,
-               m.nombre AS materia_nombre,
-               g.nombre AS grupo_nombre,
-               p.nombre AS profesor_nombre, p.apellido AS profesor_apellido
-        FROM calificaciones c
-        JOIN alumnos a ON c.alumno_id = a.id
-        JOIN asignaciones asi ON c.asignacion_id = asi.id
-        JOIN materias m ON asi.materia_id = m.id
-        JOIN grupos g ON asi.grupo_id = g.id
-        JOIN profesores p ON asi.profesor_id = p.id
-        WHERE c.id = :id";
-
-$stmt = $pdo->prepare($sql);
-$stmt->execute(['id' => $id]);
-$calificacion = $stmt->fetch();
-
-if (!$calificacion) {
-    echo "<div class='alert alert-danger'>Calificación no encontrada.</div>";
-    require '../../includes/footer.php';
+if (!$calificacionData) {
+    header("Location: index.php");
     exit;
 }
 
-// Obtener lista de alumnos para el select
-$alumnos = $pdo->query("SELECT id, nombre, apellido FROM alumnos ORDER BY apellido, nombre")->fetchAll();
+// Obtener listas para selects
+$alumnos = $pdo->query("SELECT id, nombre, apellido FROM alumnos ORDER BY nombre")->fetchAll();
+$grupos = $pdo->query("SELECT id, nombre FROM grupos ORDER BY nombre")->fetchAll();
+$materias = $pdo->query("SELECT id, nombre FROM materias ORDER BY nombre")->fetchAll();
+$profesores = $pdo->query("SELECT id, nombre, apellido FROM profesores ORDER BY nombre")->fetchAll();
 
-// Obtener lista de asignaciones para el select
-$asignaciones = $pdo->query("
-    SELECT asi.id, m.nombre AS materia, g.nombre AS grupo, p.nombre AS profesor_nombre, p.apellido AS profesor_apellido
-    FROM asignaciones asi
-    JOIN materias m ON asi.materia_id = m.id
-    JOIN grupos g ON asi.grupo_id = g.id
-    JOIN profesores p ON asi.profesor_id = p.id
-    ORDER BY m.nombre, g.nombre
-")->fetchAll();
+$errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $alumno_id = $_POST['alumno_id'];
-    $asignacion_id = $_POST['asignacion_id'];
-    $calificacion_val = $_POST['calificacion'];
-    $fecha = $_POST['fecha'];
+    $alumno_id = $_POST['alumno_id'] ?? '';
+    $grupo_id = $_POST['grupo_id'] ?? '';
+    $materia_id = $_POST['materia_id'] ?? '';
+    $profesor_id = $_POST['profesor_id'] ?? '';
+    $calificacion = $_POST['calificacion'] ?? '';
+    $fecha = $_POST['fecha'] ?? '';
 
-    // Validaciones básicas
-    $errors = [];
-    if (empty($alumno_id)) $errors[] = "Debe seleccionar un alumno.";
-    if (empty($asignacion_id)) $errors[] = "Debe seleccionar una asignación.";
-    if (!is_numeric($calificacion_val) || $calificacion_val < 0 || $calificacion_val > 100) {
-        $errors[] = "La calificación debe ser un número entre 0 y 100.";
+    // Validaciones
+    if (!$alumno_id) $errors[] = "Seleccione un alumno.";
+    if (!$grupo_id) $errors[] = "Seleccione un grupo.";
+    if (!$materia_id) $errors[] = "Seleccione una materia.";
+    if (!$profesor_id) $errors[] = "Seleccione un profesor.";
+    if ($calificacion === '' || !is_numeric($calificacion) || $calificacion < 0 || $calificacion > 100) {
+        $errors[] = "Ingrese una calificación válida entre 0 y 100.";
     }
-    if (empty($fecha)) $errors[] = "Debe ingresar una fecha.";
+    if (!$fecha) $errors[] = "Ingrese una fecha válida.";
 
     if (empty($errors)) {
-        $sql_update = "UPDATE calificaciones SET alumno_id = :alumno_id, asignacion_id = :asignacion_id, calificacion = :calificacion, fecha = :fecha WHERE id = :id";
-        $stmt_update = $pdo->prepare($sql_update);
-        $stmt_update->execute([
-            'alumno_id' => $alumno_id,
-            'asignacion_id' => $asignacion_id,
-            'calificacion' => $calificacion_val,
-            'fecha' => $fecha,
-            'id' => $id,
-        ]);
+        $stmt = $pdo->prepare("UPDATE calificaciones SET alumno_id = ?, grupo_id = ?, materia_id = ?, profesor_id = ?, calificacion = ?, fecha = ? WHERE id = ?");
+        $stmt->execute([$alumno_id, $grupo_id, $materia_id, $profesor_id, $calificacion, $fecha, $id]);
         header("Location: index.php");
         exit;
     }
+} else {
+    // Cargar valores actuales para el formulario
+    $alumno_id = $calificacionData['alumno_id'];
+    $grupo_id = $calificacionData['grupo_id'];
+    $materia_id = $calificacionData['materia_id'];
+    $profesor_id = $calificacionData['profesor_id'];
+    $calificacion = $calificacionData['calificacion'];
+    $fecha = $calificacionData['fecha'];
 }
 ?>
 
-<div class="container mt-4">
-    <h2>Editar Calificación</h2>
+<h2>Editar Calificación</h2>
 
-    <?php if (!empty($errors)): ?>
-        <div class="alert alert-danger">
-            <ul>
-            <?php foreach ($errors as $error): ?>
-                <li><?= htmlspecialchars($error) ?></li>
+<?php if ($errors): ?>
+    <div class="alert alert-danger">
+        <ul>
+        <?php foreach($errors as $error): ?>
+            <li><?= htmlspecialchars($error) ?></li>
+        <?php endforeach; ?>
+        </ul>
+    </div>
+<?php endif; ?>
+
+<form method="post">
+    <div class="mb-3">
+        <label for="alumno_id" class="form-label">Alumno</label>
+        <select name="alumno_id" id="alumno_id" class="form-select" required>
+            <option value="">-- Seleccionar alumno --</option>
+            <?php foreach ($alumnos as $al): ?>
+                <option value="<?= $al['id'] ?>" <?= ($alumno_id == $al['id']) ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($al['nombre'] . ' ' . $al['apellido']) ?>
+                </option>
             <?php endforeach; ?>
-            </ul>
-        </div>
-    <?php endif; ?>
+        </select>
+    </div>
 
-    <form method="POST" action="">
-        <div class="mb-3">
-            <label for="alumno_id" class="form-label">Alumno</label>
-            <select id="alumno_id" name="alumno_id" class="form-select" required>
-                <option value="">-- Seleccionar alumno --</option>
-                <?php foreach ($alumnos as $alumno): ?>
-                    <option value="<?= $alumno['id'] ?>" <?= ($calificacion['alumno_id'] == $alumno['id']) ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($alumno['apellido'] . ", " . $alumno['nombre']) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
+    <div class="mb-3">
+        <label for="grupo_id" class="form-label">Grupo</label>
+        <select name="grupo_id" id="grupo_id" class="form-select" required>
+            <option value="">-- Seleccionar grupo --</option>
+            <?php foreach ($grupos as $gr): ?>
+                <option value="<?= $gr['id'] ?>" <?= ($grupo_id == $gr['id']) ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($gr['nombre']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </div>
 
-        <div class="mb-3">
-            <label for="asignacion_id" class="form-label">Asignación (Materia - Grupo - Profesor)</label>
-            <select id="asignacion_id" name="asignacion_id" class="form-select" required>
-                <option value="">-- Seleccionar asignación --</option>
-                <?php foreach ($asignaciones as $asi): ?>
-                    <option value="<?= $asi['id'] ?>" <?= ($calificacion['asignacion_id'] == $asi['id']) ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($asi['materia'] . " - " . $asi['grupo'] . " - " . $asi['profesor_nombre'] . " " . $asi['profesor_apellido']) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
+    <div class="mb-3">
+        <label for="materia_id" class="form-label">Materia</label>
+        <select name="materia_id" id="materia_id" class="form-select" required>
+            <option value="">-- Seleccionar materia --</option>
+            <?php foreach ($materias as $mat): ?>
+                <option value="<?= $mat['id'] ?>" <?= ($materia_id == $mat['id']) ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($mat['nombre']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </div>
 
-        <div class="mb-3">
-            <label for="calificacion" class="form-label">Calificación</label>
-            <input type="number" step="0.01" min="0" max="100" id="calificacion" name="calificacion" class="form-control" value="<?= htmlspecialchars($calificacion['calificacion']) ?>" required>
-        </div>
+    <div class="mb-3">
+        <label for="profesor_id" class="form-label">Profesor</label>
+        <select name="profesor_id" id="profesor_id" class="form-select" required>
+            <option value="">-- Seleccionar profesor --</option>
+            <?php foreach ($profesores as $prof): ?>
+                <option value="<?= $prof['id'] ?>" <?= ($profesor_id == $prof['id']) ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($prof['nombre'] . ' ' . $prof['apellido']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </div>
 
-        <div class="mb-3">
-            <label for="fecha" class="form-label">Fecha</label>
-            <input type="date" id="fecha" name="fecha" class="form-control" value="<?= htmlspecialchars($calificacion['fecha']) ?>" required>
-        </div>
+    <div class="mb-3">
+        <label for="calificacion" class="form-label">Calificación (0-100)</label>
+        <input type="number" name="calificacion" id="calificacion" min="0" max="100" step="0.01" value="<?= htmlspecialchars($calificacion) ?>" class="form-control" required>
+    </div>
 
-        <button type="submit" class="btn btn-primary">Actualizar</button>
-        <a href="index.php" class="btn btn-secondary">Cancelar</a>
-    </form>
-</div>
+    <div class="mb-3">
+        <label for="fecha" class="form-label">Fecha</label>
+        <input type="date" name="fecha" id="fecha" value="<?= htmlspecialchars($fecha) ?>" class="form-control" required>
+    </div>
 
-<?php
-require '../../includes/footer.php';
-?>
+    <button type="submit" class="btn btn-primary">Actualizar</button>
+    <a href="index.php" class="btn btn-secondary">Cancelar</a>
+</form>
+
+<?php require '../../includes/footer.php'; ?>

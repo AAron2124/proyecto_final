@@ -1,40 +1,53 @@
 <?php
-include '../../includes/db.php';
+session_start();
+require '../../includes/db.php';
+require '../../includes/header.php';
 
-$sql = "SELECT g.id, g.nombre, g.horario, m.nombre AS materia, p.nombre AS profesor 
-        FROM grupos g 
-        JOIN materias m ON g.id_materia = m.id
-        JOIN profesores p ON g.id_profesor = p.id";
+if (!isset($_SESSION['usuario']) || $_SESSION['rol'] !== 'admin') {
+    header("Location: ../../views/login.php");
+    exit;
+}
 
-$stmt = $pdo->query($sql);
+// Obtener todos los grupos
+$stmt = $pdo->query("SELECT * FROM grupos ORDER BY nombre");
 $grupos = $stmt->fetchAll();
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Gestión de Grupos</title>
-    <link rel="stylesheet" href="../../css/estilos.css">
-</head>
-<body>
-<h1>Listado de Grupos</h1>
-<a href="crear.php">Agregar Grupo</a>
-<table>
-    <tr>
-        <th>Nombre</th><th>Materia</th><th>Profesor</th><th>Horario</th><th>Acciones</th>
-    </tr>
-    <?php foreach ($grupos as $g): ?>
+
+<h2 class="mb-4">Grupos</h2>
+
+<a href="crear.php" class="btn btn-primary mb-3">Crear Grupo</a>
+
+<table class="table table-bordered">
+    <thead>
         <tr>
-            <td><?= htmlspecialchars($g['nombre']) ?></td>
-            <td><?= htmlspecialchars($g['materia']) ?></td>
-            <td><?= htmlspecialchars($g['profesor']) ?></td>
-            <td><?= htmlspecialchars($g['horario']) ?></td>
-            <td>
-                <a href="editar.php?id=<?= $g['id'] ?>">Editar</a> |
-                <a href="eliminar.php?id=<?= $g['id'] ?>" onclick="return confirmarEliminacion()">Eliminar</a>
-            </td>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Nivel</th>
+            <th>Alumnos asignados</th>
+            <th>Acciones</th>
         </tr>
-    <?php endforeach; ?>
+    </thead>
+    <tbody>
+        <?php foreach ($grupos as $grupo): ?>
+            <?php
+                // Contar alumnos asignados
+                $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM alumnos_grupos WHERE grupo_id = ?");
+                $stmtCount->execute([$grupo['id']]);
+                $alumnosCount = $stmtCount->fetchColumn();
+            ?>
+            <tr>
+                <td><?= htmlspecialchars($grupo['id']) ?></td>
+                <td><?= htmlspecialchars($grupo['nombre']) ?></td>
+                <td><?= htmlspecialchars($grupo['nivel']) ?></td>
+                <td><?= $alumnosCount ?></td>
+                <td>
+                    <a href="editar.php?id=<?= $grupo['id'] ?>" class="btn btn-sm btn-warning">Editar</a>
+                    <a href="gestionar_alumnos.php?id=<?= $grupo['id'] ?>" class="btn btn-sm btn-info">Gestionar Alumnos</a>
+                    <a href="eliminar.php?id=<?= $grupo['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar este grupo?')">Eliminar</a>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+    </tbody>
 </table>
-<script src="../../js/confirmaciones.js"></script>
-</body>
-</html>
+
+<?php require '../../includes/footer.php'; ?>

@@ -1,35 +1,43 @@
 <?php
-include '../../includes/db.php';
+session_start();
+require '../../includes/db.php';
+require '../../includes/header.php';
 
-$stmt = $pdo->query("SELECT * FROM materias");
+if (!isset($_SESSION['usuario']) || $_SESSION['rol'] !== 'admin') {
+    header("Location: ../../views/login.php");
+    exit;
+}
+
+$stmt = $pdo->query("SELECT * FROM materias ORDER BY nombre");
 $materias = $stmt->fetchAll();
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Gestión de Materias</title>
-    <link rel="stylesheet" href="../../css/estilos.css">
-</head>
-<body>
-<h1>Listado de Materias</h1>
-<a href="crear.php">Agregar Materia</a>
-<table>
-    <tr>
-        <th>Nombre</th><th>Clave</th><th>Créditos</th><th>Semestre</th><th>Acciones</th>
-    </tr>
-    <?php foreach ($materias as $m): ?>
+
+<h2 class="mb-4">Materias</h2>
+
+<a href="crear.php" class="btn btn-primary mb-3">Agregar Materia</a>
+
+<table class="table table-striped">
+    <thead>
         <tr>
-            <td><?= htmlspecialchars($m['nombre']) ?></td>
-            <td><?= htmlspecialchars($m['clave']) ?></td>
-            <td><?= $m['creditos'] ?></td>
-            <td><?= $m['semestre'] ?></td>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($materias as $materia): ?>
+        <tr>
+            <td><?= $materia['id'] ?></td>
+            <td><?= htmlspecialchars($materia['nombre']) ?></td>
+            <td><?= htmlspecialchars($materia['descripcion']) ?></td>
             <td>
-                <a href="editar.php?id=<?= $m['id'] ?>">Editar</a> |
-                <a href="eliminar.php?id=<?= $m['id'] ?>" onclick="return confirmarEliminacion()">Eliminar</a>
+                <a href="editar.php?id=<?= $materia['id'] ?>" class="btn btn-sm btn-warning">Editar</a>
+                <a href="eliminar.php?id=<?= $materia['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('¿Seguro que quieres eliminar esta materia?')">Eliminar</a>
             </td>
         </tr>
-    <?php endforeach; ?>
+        <?php endforeach; ?>
+    </tbody>
 </table>
-<script src="../../js/confirmaciones.js"></script>
-</body>
-</html>
+
+<?php require '../../includes/footer.php'; ?>

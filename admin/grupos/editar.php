@@ -1,56 +1,70 @@
 <?php
+session_start();
 require '../../includes/db.php';
+require '../../includes/header.php';
 
-$id = $_GET['id'];
+if (!isset($_SESSION['usuario']) || $_SESSION['rol'] !== 'admin') {
+    header("Location: ../../views/login.php");
+    exit;
+}
+
+$id = $_GET['id'] ?? null;
+if (!$id) {
+    header("Location: index.php");
+    exit;
+}
 
 $stmt = $pdo->prepare("SELECT * FROM grupos WHERE id = ?");
 $stmt->execute([$id]);
 $grupo = $stmt->fetch();
 
-$materias = $pdo->query("SELECT id, nombre FROM materias")->fetchAll();
-$profesores = $pdo->query("SELECT id, nombre FROM profesores")->fetchAll();
+if (!$grupo) {
+    header("Location: index.php");
+    exit;
+}
+
+$error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nombre = $_POST['nombre'];
-    $id_materia = $_POST['id_materia'];
-    $id_profesor = $_POST['id_profesor'];
-    $horario = $_POST['horario'];
+    $nombre = trim($_POST['nombre']);
+    $nivel = trim($_POST['nivel']);
 
-    $sql = "UPDATE grupos SET nombre = ?, id_materia = ?, id_profesor = ?, horario = ? WHERE id = ?";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$nombre, $id_materia, $id_profesor, $horario, $id]);
-
-    header("Location: index.php");
+    if (empty($nombre)) {
+        $error = 'El nombre es obligatorio.';
+    } elseif (empty($nivel)) {
+        $error = 'El nivel es obligatorio.';
+    } else {
+        $stmt = $pdo->prepare("UPDATE grupos SET nombre = ?, nivel = ? WHERE id = ?");
+        if ($stmt->execute([$nombre, $nivel, $id])) {
+            header("Location: index.php");
+            exit;
+        } else {
+            $error = 'Error al actualizar el grupo.';
+        }
+    }
+} else {
+    $nombre = $grupo['nombre'];
+    $nivel = $grupo['nivel'];
 }
 ?>
-<!DOCTYPE html>
-<html>
-<head><title>Editar Grupo</title></head>
-<body>
-<h1>Editar Grupo</h1>
+
+<h2 class="mb-4">Editar Grupo</h2>
+
+<?php if ($error): ?>
+<div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
+<?php endif; ?>
+
 <form method="post">
-    <input name="nombre" value="<?= $grupo['nombre'] ?>" required><br>
-
-    <label>Materia:</label>
-    <select name="id_materia" required>
-        <?php foreach ($materias as $m): ?>
-            <option value="<?= $m['id'] ?>" <?= $grupo['id_materia'] == $m['id'] ? 'selected' : '' ?>>
-                <?= htmlspecialchars($m['nombre']) ?>
-            </option>
-        <?php endforeach; ?>
-    </select><br>
-
-    <label>Profesor:</label>
-    <select name="id_profesor" required>
-        <?php foreach ($profesores as $p): ?>
-            <option value="<?= $p['id'] ?>" <?= $grupo['id_profesor'] == $p['id'] ? 'selected' : '' ?>>
-                <?= htmlspecialchars($p['nombre']) ?>
-            </option>
-        <?php endforeach; ?>
-    </select><br>
-
-    <input name="horario" value="<?= $grupo['horario'] ?>" required><br>
-    <button type="submit">Actualizar</button>
+    <div class="mb-3">
+        <label for="nombre" class="form-label">Nombre</label>
+        <input type="text" name="nombre" id="nombre" class="form-control" value="<?= htmlspecialchars($nombre) ?>" required>
+    </div>
+    <div class="mb-3">
+        <label for="nivel" class="form-label">Nivel</label>
+        <input type="text" name="nivel" id="nivel" class="form-control" value="<?= htmlspecialchars($nivel) ?>" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Actualizar</button>
+    <a href="index.php" class="btn btn-secondary">Cancelar</a>
 </form>
-</body>
-</html>
+
+<?php require '../../includes/footer.php'; ?>

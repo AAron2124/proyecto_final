@@ -8,50 +8,59 @@ if (!isset($_SESSION['usuario']) || $_SESSION['rol'] !== 'admin') {
     exit;
 }
 
-// Consulta para traer todas las calificaciones con info relacionada
-$sql = "SELECT c.id, a.nombre AS alumno_nombre, a.apellido AS alumno_apellido, 
-        m.nombre AS materia_nombre, g.nombre AS grupo_nombre, 
-        p.nombre AS profesor_nombre, p.apellido AS profesor_apellido, 
-        c.calificacion
+// Consulta para obtener todas las calificaciones con sus relaciones
+$sql = "SELECT c.id, c.calificacion, c.fecha,
+        a.nombre AS nombre_alumno, a.apellido AS apellido_alumno,
+        g.nombre AS nombre_grupo,
+        m.nombre AS nombre_materia,
+        p.nombre AS nombre_profesor, p.apellido AS apellido_profesor
         FROM calificaciones c
-        JOIN alumnos a ON c.alumno_id = a.id
-        JOIN materias m ON c.materia_id = m.id
-        JOIN grupos g ON c.grupo_id = g.id
-        JOIN profesores p ON c.profesor_id = p.id
-        ORDER BY a.apellido, a.nombre, m.nombre";
+        INNER JOIN alumnos a ON c.alumno_id = a.id
+        INNER JOIN grupos g ON c.grupo_id = g.id
+        INNER JOIN materias m ON c.materia_id = m.id
+        INNER JOIN profesores p ON c.profesor_id = p.id
+        ORDER BY c.fecha DESC";
 
 $stmt = $pdo->query($sql);
+$calificaciones = $stmt->fetchAll();
 ?>
 
-<h2 class="mb-4">Lista de Calificaciones</h2>
+<h2 class="mb-4">Calificaciones</h2>
 
-<a href="create.php" class="btn btn-primary mb-3">Agregar Calificación</a>
+<a href="crear.php" class="btn btn-primary mb-3">Agregar Calificación</a>
 
 <table class="table table-bordered table-striped">
-    <thead class="table-dark">
+    <thead>
         <tr>
             <th>Alumno</th>
-            <th>Materia</th>
             <th>Grupo</th>
+            <th>Materia</th>
             <th>Profesor</th>
             <th>Calificación</th>
+            <th>Fecha</th>
             <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
-    <?php while ($row = $stmt->fetch()): ?>
-        <tr>
-            <td><?= htmlspecialchars($row['alumno_nombre'] . ' ' . $row['alumno_apellido']) ?></td>
-            <td><?= htmlspecialchars($row['materia_nombre']) ?></td>
-            <td><?= htmlspecialchars($row['grupo_nombre']) ?></td>
-            <td><?= htmlspecialchars($row['profesor_nombre'] . ' ' . $row['profesor_apellido']) ?></td>
-            <td><?= htmlspecialchars($row['calificacion']) ?></td>
-            <td>
-                <a href="edit.php?id=<?= $row['id'] ?>" class="btn btn-warning btn-sm">Editar</a>
-                <!-- Aquí podrías agregar eliminar si quieres -->
-            </td>
-        </tr>
-    <?php endwhile; ?>
+        <?php foreach ($calificaciones as $cal): ?>
+            <tr>
+                <td><?= htmlspecialchars($cal['nombre_alumno'] . ' ' . $cal['apellido_alumno']) ?></td>
+                <td><?= htmlspecialchars($cal['nombre_grupo']) ?></td>
+                <td><?= htmlspecialchars($cal['nombre_materia']) ?></td>
+                <td><?= htmlspecialchars($cal['nombre_profesor'] . ' ' . $cal['apellido_profesor']) ?></td>
+                <td><?= htmlspecialchars($cal['calificacion']) ?></td>
+                <td><?= htmlspecialchars($cal['fecha']) ?></td>
+                <td>
+                    <a href="editar.php?id=<?= $cal['id'] ?>" class="btn btn-sm btn-warning">Editar</a>
+                    <a href="eliminar.php?id=<?= $cal['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar esta calificación?')">Eliminar</a>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+        <?php if (count($calificaciones) === 0): ?>
+            <tr>
+                <td colspan="7" class="text-center">No hay calificaciones registradas.</td>
+            </tr>
+        <?php endif; ?>
     </tbody>
 </table>
 
