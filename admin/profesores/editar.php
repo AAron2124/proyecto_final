@@ -70,23 +70,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <form action="editar.php?id=<?= $id ?>" method="POST">
     <div class="mb-3">
         <label for="nombre" class="form-label">Nombre</label>
-        <input type="text" name="nombre" id="nombre" class="form-control" value="<?= htmlspecialchars($nombre) ?>" required>
+        <input type="text" name="nombre" id="nombre" class="form-control"
+            value="<?= htmlspecialchars($nombre) ?>" 
+            required 
+            pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+" 
+            title="Solo letras y espacios permitidos">
     </div>
     <div class="mb-3">
         <label for="apellido" class="form-label">Apellido</label>
-        <input type="text" name="apellido" id="apellido" class="form-control" value="<?= htmlspecialchars($apellido) ?>" required>
+        <input type="text" name="apellido" id="apellido" class="form-control" 
+            value="<?= htmlspecialchars($apellido) ?>" 
+            required 
+            pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+" 
+            title="Solo letras y espacios permitidos">
     </div>
     <div class="mb-3">
         <label for="especialidad" class="form-label">Especialidad</label>
-        <input type="text" name="especialidad" id="especialidad" class="form-control" value="<?= htmlspecialchars($especialidad) ?>" required>
+        <input type="text" name="especialidad" id="especialidad" class="form-control" 
+            value="<?= htmlspecialchars($especialidad) ?>" 
+            required 
+            pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+" 
+            title="Solo letras y espacios permitidos">
     </div>
     <div class="mb-3">
         <label for="telefono" class="form-label">Teléfono</label>
-        <input type="text" name="telefono" id="telefono" class="form-control" value="<?= htmlspecialchars($telefono) ?>" required>
+        <input type="text" name="telefono" id="telefono" class="form-control" 
+            value="<?= htmlspecialchars($telefono) ?>" 
+            required 
+            pattern="[0-9]{7,15}" 
+            title="Solo números (entre 7 y 15 dígitos)">
     </div>
     <div class="mb-3">
         <label for="correo" class="form-label">Correo</label>
-        <input type="email" name="correo" id="correo" class="form-control" value="<?= htmlspecialchars($correo) ?>" required>
+        <input type="email" name="correo" id="correo" class="form-control" 
+            value="<?= htmlspecialchars($correo) ?>" 
+            required>
     </div>
     <button type="submit" class="btn btn-primary">Actualizar</button>
     <a href="index.php" class="btn btn-secondary">Cancelar</a>

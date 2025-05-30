@@ -53,11 +53,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     <div class="mb-3">
         <label for="nombre" class="form-label">Nombre *</label>
-        <input type="text" class="form-control" id="nombre" name="nombre" value="<?= htmlspecialchars($_POST['nombre'] ?? '') ?>" required>
+        <input type="text" class="form-control" id="nombre" name="nombre" 
+            value="<?= htmlspecialchars($_POST['nombre'] ?? '') ?>" 
+            required 
+            pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+" 
+            title="Solo letras y espacios permitidos">
     </div>
     <div class="mb-3">
         <label for="apellido" class="form-label">Apellido *</label>
-        <input type="text" class="form-control" id="apellido" name="apellido" value="<?= htmlspecialchars($_POST['apellido'] ?? '') ?>" required>
+        <input type="text" class="form-control" id="apellido" name="apellido" 
+            value="<?= htmlspecialchars($_POST['apellido'] ?? '') ?>" 
+            required 
+            pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+" 
+            title="Solo letras y espacios permitidos">
     </div>
     <div class="mb-3">
         <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento</label>
@@ -69,7 +77,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     <div class="mb-3">
         <label for="telefono" class="form-label">Teléfono</label>
-        <input type="text" class="form-control" id="telefono" name="telefono" value="<?= htmlspecialchars($_POST['telefono'] ?? '') ?>">
+        <input type="text" class="form-control" id="telefono" name="telefono" 
+            value="<?= htmlspecialchars($_POST['telefono'] ?? '') ?>" 
+            pattern="[0-9]{7,15}" 
+            title="Solo números (entre 7 y 15 dígitos)">
     </div>
     <div class="mb-3">
         <label for="correo" class="form-label">Correo</label>
@@ -79,5 +90,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <button type="submit" class="btn btn-success">Agregar Alumno</button>
     <a href="index.php" class="btn btn-secondary">Cancelar</a>
 </form>
+
 
 <?php include '../../includes/footer.php'; ?>

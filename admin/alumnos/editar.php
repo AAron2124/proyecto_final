@@ -49,11 +49,19 @@ if (!$alumno) {
 <form method="post" action="editar.php?id=<?= $id ?>">
     <div class="mb-3">
         <label for="nombre" class="form-label">Nombre</label>
-        <input type="text" class="form-control" id="nombre" name="nombre" value="<?= htmlspecialchars($alumno['nombre']) ?>" required>
+        <input type="text" class="form-control" id="nombre" name="nombre" 
+            value="<?= htmlspecialchars($alumno['nombre']) ?>" 
+            required 
+            pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+" 
+            title="Solo letras y espacios permitidos">
     </div>
     <div class="mb-3">
         <label for="apellido" class="form-label">Apellido</label>
-        <input type="text" class="form-control" id="apellido" name="apellido" value="<?= htmlspecialchars($alumno['apellido']) ?>" required>
+        <input type="text" class="form-control" id="apellido" name="apellido" 
+            value="<?= htmlspecialchars($alumno['apellido']) ?>" 
+            required 
+            pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+" 
+            title="Solo letras y espacios permitidos">
     </div>
     <div class="mb-3">
         <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento</label>
@@ -65,7 +73,10 @@ if (!$alumno) {
     </div>
     <div class="mb-3">
         <label for="telefono" class="form-label">Teléfono</label>
-        <input type="text" class="form-control" id="telefono" name="telefono" value="<?= htmlspecialchars($alumno['telefono']) ?>">
+        <input type="text" class="form-control" id="telefono" name="telefono" 
+            value="<?= htmlspecialchars($alumno['telefono']) ?>" 
+            pattern="[0-9]{7,15}" 
+            title="Solo números (entre 7 y 15 dígitos)">
     </div>
     <div class="mb-3">
         <label for="correo" class="form-label">Correo</label>
@@ -75,5 +86,6 @@ if (!$alumno) {
     <button type="submit" class="btn btn-primary">Guardar Cambios</button>
     <a href="index.php" class="btn btn-secondary">Cancelar</a>
 </form>
+
 
 <?php include '../../includes/footer.php'; ?>

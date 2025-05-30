@@ -78,8 +78,8 @@ $totalUsuarios = $pdo->query("SELECT COUNT(*) FROM usuarios")->fetchColumn();
     </div>
 </div>
 
-<div class="mt-5">
-    <a href="../views/logout.php" class="btn btn-danger"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</a>
-</div>
+<a href="/proyecto_final/views/logout.php" class="btn btn-danger">
+    <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+</a>
 
 <?php require '../includes/footer.php'; ?>
