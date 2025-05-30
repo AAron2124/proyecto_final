@@ -1,5 +1,6 @@
 <?php
 session_start();
+// Hola yo soy Mateo
 require '../includes/db.php';
 require '../includes/header.php';
 
