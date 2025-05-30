@@ -2,7 +2,7 @@
 session_start();
 require '../includes/db.php';
 require '../includes/header.php';
-
+//lol
 function verificarLogin() {
     if (!isset($_SESSION['usuario']) || $_SESSION['rol'] !== 'alumno') {
         header("Location: ../views/login.php");
