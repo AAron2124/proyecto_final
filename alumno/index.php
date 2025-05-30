@@ -1,19 +1,24 @@
 <?php
-//session_start();
+session_start();
 require '../includes/db.php';
 require '../includes/header.php';
-require '../includes/funciones.php';
 
+function verificarLogin() {
+    if (!isset($_SESSION['usuario']) || $_SESSION['rol'] !== 'alumno') {
+        header("Location: ../views/login.php");
+        exit;
+    }
+}
 verificarLogin();
 
-// Asegurar que el usuario está bien definido
-if (!is_array($_SESSION['usuario']) || !isset($_SESSION['usuario']['id'])) {
+// Validar que exista usuario_id en sesión
+if (!isset($_SESSION['usuario_id'])) {
     echo "<div class='alert alert-danger'>Sesión inválida. Por favor, vuelve a iniciar sesión.</div>";
     require '../includes/footer.php';
     exit;
 }
 
-$usuario_id = $_SESSION['usuario']['id'];
+$usuario_id = $_SESSION['usuario_id'];
 
 // Buscar al alumno correspondiente
 $stmt = $pdo->prepare("SELECT id, nombre, apellido FROM alumnos WHERE usuario_id = ?");
