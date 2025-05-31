@@ -13,7 +13,7 @@ if (session_status() == PHP_SESSION_NONE) session_start();
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/proyecto_final/admin/index.php">Gestión Escolar</a>
+            <a class="navbar-brand" href="/proyecto_final/alumno/index.php">Gestión Escolar</a>
             <div>
                 <?php if (isset($_SESSION['usuario'])): ?>
                     <span class="text-white me-3">Hola, <?= htmlspecialchars($_SESSION['usuario']) ?></span>

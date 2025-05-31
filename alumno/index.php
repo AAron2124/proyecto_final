@@ -1,7 +1,7 @@
 <?php
 session_start();
 require '../includes/db.php';
-require '../includes/header.php';
+require '../includes/header_alumno.php';
 
 function verificarLogin() {
     if (!isset($_SESSION['usuario']) || $_SESSION['rol'] !== 'alumno') {
