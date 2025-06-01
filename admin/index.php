@@ -63,7 +63,7 @@ $totalUsuarios = $pdo->query("SELECT COUNT(*) FROM usuarios")->fetchColumn();
             <div class="card-body">
                 <h5 class="card-title">Usuarios</h5>
                 <p class="card-text fs-3"><?= $totalUsuarios ?></p>
-                <a href="usuarios.php" class="btn btn-light btn-sm">Gestionar</a>
+                <a href="usuarios/usuarios.php" class="btn btn-light btn-sm">Gestionar</a>
             </div>
         </div>
     </div>

@@ -1,7 +1,7 @@
 <?php
 session_start();
-require '../includes/db.php';
-require '../includes/header.php';
+require '../../includes/db.php';
+require '../../includes/header.php';
 
 if (!isset($_GET['id'])) {
     header("Location: usuarios.php");
@@ -48,4 +48,4 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <a href="usuarios.php" class="btn btn-secondary">Cancelar</a>
 </form>
 
-<?php require '../includes/footer.php'; ?>
+<?php require '../../includes/footer.php'; ?>

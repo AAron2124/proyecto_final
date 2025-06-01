@@ -1,7 +1,7 @@
 <?php
 session_start();
-require '../includes/db.php';
-require '../includes/header.php';
+require '../../includes/db.php';
+require '../../includes/header.php';
 
 //if (!isset($_SESSION['usuario']) || $_SESSION['rol'] !== 'admin') {
 //    header("Location: ../views/login.php");
@@ -40,4 +40,4 @@ $usuarios = $stmt->fetchAll();
     </tbody>
 </table>
 
-<?php require '../includes/footer.php'; ?>
+<?php require '../../includes/footer.php'; ?>

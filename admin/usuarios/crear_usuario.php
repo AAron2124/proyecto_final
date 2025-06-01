@@ -1,11 +1,11 @@
 <?php
 session_start();
-require '../includes/db.php';
-require '../includes/header.php';
+require '../../includes/db.php';
+require '../../includes/header.php';
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $username = $_POST['username'];
-    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $password = $_POST['password'];
     $rol = $_POST['rol'];
 
     $stmt = $pdo->prepare("INSERT INTO usuarios (username, password, rol) VALUES (?, ?, ?)");
@@ -38,4 +38,4 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <a href="usuarios.php" class="btn btn-secondary">Cancelar</a>
 </form>
 
-<?php require '../includes/footer.php'; ?>
+<?php require '../../includes/footer.php'; ?>
