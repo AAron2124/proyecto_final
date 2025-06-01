@@ -21,7 +21,7 @@ $profesores = $stmt->fetchAll();
             <th>ID</th>
             <th>Nombre</th>
             <th>Apellido</th>
-            <th>Especialidad</th>
+            <th>Carrera/s</th>
             <th>Teléfono</th>
             <th>Correo</th>
             <th>Acciones</th>

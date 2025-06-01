@@ -8,7 +8,7 @@ if (!isset($_SESSION['usuario']) || $_SESSION['rol'] !== 'admin') {
     exit;
 }
 
-// Consultas para obtener los totales
+// Consultas para obtener los totales grupo
 $totalAlumnos = $pdo->query("SELECT COUNT(*) FROM alumnos")->fetchColumn();
 $totalProfesores = $pdo->query("SELECT COUNT(*) FROM profesores")->fetchColumn();
 $totalMaterias = $pdo->query("SELECT COUNT(*) FROM materias")->fetchColumn();
@@ -49,7 +49,7 @@ $totalUsuarios = $pdo->query("SELECT COUNT(*) FROM usuarios")->fetchColumn();
     <div class="col-md-3">
         <div class="card text-white bg-info shadow">
             <div class="card-body">
-                <h5 class="card-title">Grupos</h5>
+                <h5 class="card-title">Carreras</h5>
                 <p class="card-text fs-3"><?= $totalGrupos ?></p>
                 <a href="grupos/index.php" class="btn btn-light btn-sm">Gestionar</a>
             </div>

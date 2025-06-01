@@ -33,7 +33,7 @@ $calificaciones = $stmt->fetchAll();
     <thead>
         <tr>
             <th>Alumno</th>
-            <th>Grupo</th>
+            <th>Especialidad</th>
             <th>Materia</th>
             <th>Profesor</th>
             <th>Calificación</th>

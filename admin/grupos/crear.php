@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $materia_id = $_POST['materia_id'] ?? '';
     $profesor_id = $_POST['profesor_id'] ?? '';
 
-    // Validar campos
+    // Validar campos 
     if ($nombre === '') {
         $errors[] = "El nombre es obligatorio.";
     }
@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-<h2 class="mb-4">Agregar Grupo</h2>
+<h2 class="mb-4">Agregar Carrera</h2>
 
 <?php if ($errors): ?>
     <div class="alert alert-danger">
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <form method="POST" action="crear.php">
     <div class="mb-3">
-        <label for="nombre" class="form-label">Nombre del Grupo</label>
+        <label for="nombre" class="form-label">Nombre de la Carrera</label>
         <input type="text" name="nombre" id="nombre" class="form-control" value="<?= htmlspecialchars($_POST['nombre'] ?? '') ?>" required>
     </div>
     <div class="mb-3">

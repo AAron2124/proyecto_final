@@ -54,7 +54,7 @@ $alumnosAsignados = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
 ?>
 
-<h2 class="mb-4">Gestionar Alumnos en el Grupo: <?= htmlspecialchars($grupo['nombre']) ?></h2>
+<h2 class="mb-4">Gestionar Alumnos en la Carrera: <?= htmlspecialchars($grupo['nombre']) ?></h2>
 
 <form method="post">
     <div class="mb-3">

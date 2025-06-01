@@ -8,14 +8,14 @@ if (!isset($_SESSION['usuario']) || $_SESSION['rol'] !== 'admin') {
     exit;
 }
 
-// Obtener todos los grupos
+// Obtener todas las carreras
 $stmt = $pdo->query("SELECT * FROM grupos ORDER BY nombre");
 $grupos = $stmt->fetchAll();
 ?>
 
-<h2 class="mb-4">Grupos</h2>
+<h2 class="mb-4">Carreras</h2>
 
-<a href="crear.php" class="btn btn-primary mb-3">Crear Grupo</a>
+<a href="crear.php" class="btn btn-primary mb-3">Crear Carrera</a>
 
 <table class="table table-bordered">
     <thead>
