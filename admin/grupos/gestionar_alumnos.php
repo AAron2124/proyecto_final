@@ -36,7 +36,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmtInsert = $pdo->prepare("INSERT INTO alumnos_grupos (alumno_id, grupo_id) VALUES (?, ?)");
 
     foreach ($alumnosSeleccionados as $alumno_id) {
-        $stmtInsert->execute([$alumno_id, $grupo_id]);
+        // Verificar si el alumno ya está en otro grupo
+        $stmtCheck = $pdo->prepare("SELECT COUNT(*) FROM alumnos_grupos WHERE alumno_id = ? AND grupo_id != ?");
+        $stmtCheck->execute([$alumno_id, $grupo_id]);
+        $count = $stmtCheck->fetchColumn();
+        
+        if ($count == 0) {
+            $stmtInsert->execute([$alumno_id, $grupo_id]);
+        }
     }
 
     header("Location: index.php");
@@ -47,10 +54,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $stmt = $pdo->query("SELECT id, nombre, apellido FROM alumnos ORDER BY nombre, apellido");
 $alumnos = $stmt->fetchAll();
 
-// Obtener alumnos asignados actualmente
+// Obtener alumnos asignados actualmente a ESTE grupo
 $stmt = $pdo->prepare("SELECT alumno_id FROM alumnos_grupos WHERE grupo_id = ?");
 $stmt->execute([$grupo_id]);
 $alumnosAsignados = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+// Obtener alumnos asignados a OTROS grupos
+$stmt = $pdo->prepare("SELECT DISTINCT alumno_id FROM alumnos_grupos WHERE grupo_id != ?");
+$stmt->execute([$grupo_id]);
+$alumnosEnOtrosGrupos = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
 ?>
 
@@ -59,7 +71,10 @@ $alumnosAsignados = $stmt->fetchAll(PDO::FETCH_COLUMN);
 <form method="post">
     <div class="mb-3">
         <label class="form-label">Seleccione los alumnos para asignar al grupo</label>
-        <?php foreach ($alumnos as $alumno): ?>
+        <?php foreach ($alumnos as $alumno): 
+            $estaEnOtroGrupo = in_array($alumno['id'], $alumnosEnOtrosGrupos);
+            $estaEnEsteGrupo = in_array($alumno['id'], $alumnosAsignados);
+        ?>
             <div class="form-check">
                 <input
                     class="form-check-input"
@@ -67,10 +82,12 @@ $alumnosAsignados = $stmt->fetchAll(PDO::FETCH_COLUMN);
                     name="alumnos[]"
                     value="<?= $alumno['id'] ?>"
                     id="alumno_<?= $alumno['id'] ?>"
-                    <?= in_array($alumno['id'], $alumnosAsignados) ? 'checked' : '' ?>
+                    <?= $estaEnEsteGrupo ? 'checked' : '' ?>
+                    <?= $estaEnOtroGrupo && !$estaEnEsteGrupo ? 'disabled' : '' ?>
                 >
                 <label class="form-check-label" for="alumno_<?= $alumno['id'] ?>">
                     <?= htmlspecialchars($alumno['nombre'] . ' ' . $alumno['apellido']) ?>
+                    <?= $estaEnOtroGrupo && !$estaEnEsteGrupo ? '(Ya asignado a otra carrera)' : '' ?>
                 </label>
             </div>
         <?php endforeach; ?>
