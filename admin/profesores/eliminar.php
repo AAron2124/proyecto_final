@@ -14,8 +14,15 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 
 $id = (int)$_GET['id'];
 
-// Opcional: podrías agregar confirmación aquí con GET/POST, pero por simplicidad eliminamos directo
+// Primero eliminar calificaciones donde profesor_id = $id
+$stmt = $pdo->prepare("DELETE FROM calificaciones WHERE profesor_id = ?");
+$stmt->execute([$id]);
 
+// Luego eliminar asignaciones donde profesor_id = $id
+$stmt = $pdo->prepare("DELETE FROM asignaciones WHERE profesor_id = ?");
+$stmt->execute([$id]);
+
+// Finalmente eliminar el profesor
 $stmt = $pdo->prepare("DELETE FROM profesores WHERE id = ?");
 $stmt->execute([$id]);
 

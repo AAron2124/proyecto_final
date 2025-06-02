@@ -43,11 +43,7 @@ CREATE TABLE materias (
 CREATE TABLE grupos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(50),
-    nivel VARCHAR(50),
-    materia_id INT NOT NULL,
-    profesor_id INT NOT NULL,
-    CONSTRAINT fk_grupos_materia FOREIGN KEY (materia_id) REFERENCES materias(id),
-    CONSTRAINT fk_grupos_profesor FOREIGN KEY (profesor_id) REFERENCES profesores(id)
+    nivel  VARCHAR(50)
 );
 
 
@@ -87,4 +83,12 @@ CREATE TABLE calificaciones (
     CONSTRAINT fk_calif_profesor FOREIGN KEY (profesor_id) REFERENCES profesores(id) ON DELETE RESTRICT,
     CONSTRAINT fk_calif_grupo FOREIGN KEY (grupo_id) REFERENCES grupos(id) ON DELETE RESTRICT
 );
-
+--relación entre los grupos y las materias:
+CREATE TABLE grupos_materias (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    grupo_id INT NOT NULL,
+    materia_id INT NOT NULL,
+    FOREIGN KEY (grupo_id) REFERENCES grupos(id),
+    FOREIGN KEY (materia_id) REFERENCES materias(id),
+    UNIQUE (grupo_id, materia_id)
+);

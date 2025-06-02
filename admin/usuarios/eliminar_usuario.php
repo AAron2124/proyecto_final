@@ -20,7 +20,24 @@ if (!$usuario) {
     die("Usuario no encontrado.");
 }
 
-// Eliminar al usuario
+// Verificar si hay un alumno relacionado a este usuario
+$stmt = $pdo->prepare("SELECT id FROM alumnos WHERE usuario_id = ?");
+$stmt->execute([$usuario_id]);
+$alumno = $stmt->fetch();
+
+if ($alumno) {
+    $alumno_id = $alumno['id'];
+
+    // Eliminar las relaciones del alumno en alumnos_grupos
+    $stmt = $pdo->prepare("DELETE FROM alumnos_grupos WHERE alumno_id = ?");
+    $stmt->execute([$alumno_id]);
+
+    // Eliminar al alumno
+    $stmt = $pdo->prepare("DELETE FROM alumnos WHERE id = ?");
+    $stmt->execute([$alumno_id]);
+}
+
+// Ahora sí, eliminar al usuario
 $stmt = $pdo->prepare("DELETE FROM usuarios WHERE id = ?");
 $stmt->execute([$usuario_id]);
 

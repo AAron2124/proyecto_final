@@ -12,13 +12,23 @@ include '../../includes/header.php';
 <table class="table table-bordered table-striped">
     <thead class="table-dark">
         <tr>
-            <th>ID</th><th>Nombre</th><th>Apellido</th><th>Correo</th><th>Acciones</th>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Correo</th>
+            <th>Usuario</th>
+            <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
     <?php
     try {
-        $stmt = $pdo->query("SELECT * FROM alumnos");
+        // Consulta con JOIN para incluir el username del usuario
+        $stmt = $pdo->query("
+            SELECT a.id, a.nombre, a.apellido, a.correo, u.username 
+            FROM alumnos a
+            LEFT JOIN usuarios u ON a.usuario_id = u.id
+        ");
         $hasRows = false;
 
         while ($row = $stmt->fetch()) {
@@ -29,6 +39,7 @@ include '../../includes/header.php';
                 <td><?= $row['nombre'] ?></td>
                 <td><?= $row['apellido'] ?></td>
                 <td><?= $row['correo'] ?></td>
+                <td><?= $row['username'] ?? 'Sin usuario' ?></td>
                 <td>
                     <a href="editar.php?id=<?= $row['id'] ?>" class="btn btn-warning btn-sm">Editar</a>
                     <a href="eliminar.php?id=<?= $row['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar alumno?')">Eliminar</a>
@@ -38,10 +49,10 @@ include '../../includes/header.php';
         }
 
         if (!$hasRows) {
-            echo "<tr><td colspan='5'>No hay alumnos registrados.</td></tr>";
+            echo "<tr><td colspan='6'>No hay alumnos registrados.</td></tr>";
         }
     } catch (Exception $e) {
-        echo "<tr><td colspan='5'>Error en la consulta: " . $e->getMessage() . "</td></tr>";
+        echo "<tr><td colspan='6'>Error en la consulta: " . $e->getMessage() . "</td></tr>";
     }
     ?>
     </tbody>
