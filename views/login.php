@@ -1,5 +1,5 @@
 <?php
-// No vuelvas a llamar session_start si ya está en funciones.php
+// No hay q llamar a session_start si ya está en funciones.php
 require '../includes/db.php';
 require '../includes/funciones.php';
 require '../includes/header.php';
@@ -17,7 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     // Compara directamente usuario y contraseña en texto plano
     if ($user && $password === $user['password']) {
-        // Inicia sesión si no está iniciada (opcional, según tu funciones.php)
+        // Inicia sesión si no está iniciada 
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }

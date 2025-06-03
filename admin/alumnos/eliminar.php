@@ -26,9 +26,8 @@ $usuario_id = $alumno['usuario_id'];
 $stmt = $pdo->prepare("DELETE FROM alumnos_grupos WHERE alumno_id = ?");
 $stmt->execute([$alumno_id]);
 
-// Si tienes otras tablas relacionadas con alumno_id, borrar sus registros también aquí
 
-// Ahora eliminar al usuario (esto eliminará también al alumno gracias a ON DELETE CASCADE)
+// eliminar al usuario (esto eliminará también al alumno pq le pusimos  ON DELETE CASCADE)
 $stmt = $pdo->prepare("DELETE FROM usuarios WHERE id = ?");
 $stmt->execute([$usuario_id]);
 

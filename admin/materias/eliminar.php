@@ -30,7 +30,7 @@ if ($id) {
         $stmt = $pdo->prepare("DELETE FROM materias WHERE id = ?");
         $stmt->execute([$id]);
 
-        // Confirmar la transacción
+        // Confirmar 
         $pdo->commit();
     } catch (Exception $e) {
         // Revertir en caso de error

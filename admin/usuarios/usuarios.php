@@ -14,7 +14,7 @@ $usuarios = $stmt->fetchAll();
 
 <h2 class="mb-4">Gestión de Usuarios 👤</h2>
 
-<a href="crear_usuario.php" class="btn btn-primary mb-3">Agregar Usuario</a>
+<a href="crear_usuario.php" class="btn btn-primary mb-3">Agregar Administrador</a>
 
 <table class="table table-bordered table-striped">
     <thead class="table-dark">
@@ -32,7 +32,6 @@ $usuarios = $stmt->fetchAll();
             <td><?= htmlspecialchars($usuario['username']) ?></td>
             <td><?= $usuario['rol'] ?></td>
             <td>
-                <a href="editar_usuario.php?id=<?= $usuario['id'] ?>" class="btn btn-warning btn-sm">Editar</a>
                 <a href="eliminar_usuario.php?id=<?= $usuario['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro de eliminar este usuario?');">Eliminar</a>
             </td>
         </tr>

@@ -6,8 +6,9 @@ require '../../includes/header.php';
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $username = $_POST['username'];
     $password = $_POST['password'];
-    $rol = $_POST['rol'];
+    $rol = 'admin'; // Forzar el rol a 'admin' sin importar el valor enviado
 
+    // Insertar solo si el rol es 'admin'
     $stmt = $pdo->prepare("INSERT INTO usuarios (username, password, rol) VALUES (?, ?, ?)");
     $stmt->execute([$username, $password, $rol]);
 
@@ -16,7 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 ?>
 
-<h2>Agregar Usuario</h2>
+<h2>Agregar Administrador</h2>
 <form method="POST" class="needs-validation" novalidate>
     <div class="mb-3">
         <label for="username" class="form-label">Nombre de usuario:</label>
@@ -26,14 +27,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <label for="password" class="form-label">Contraseña:</label>
         <input type="password" name="password" id="password" class="form-control" required minlength="6">
     </div>
-    <div class="mb-3">
-        <label for="rol" class="form-label">Rol:</label>
-        <select name="rol" id="rol" class="form-select" required>
-            <option value="">-- Seleccionar --</option>
-            <option value="admin">Administrador</option>
-            <option value="alumno">Alumno</option>
-        </select>
-    </div>
+    <!-- Campo oculto para el rol -->
+    <input type="hidden" name="rol" value="admin">
+
     <button type="submit" class="btn btn-success">Guardar</button>
     <a href="usuarios.php" class="btn btn-secondary">Cancelar</a>
 </form>

@@ -22,7 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $telefono = $_POST['telefono'] ?? '';
     $correo = $_POST['correo'] ?? '';
 
-    // Aquí puedes agregar validaciones si quieres
 
     // Actualizar en BD
     $sql = "UPDATE alumnos SET nombre = ?, apellido = ?, fecha_nacimiento = ?, direccion = ?, telefono = ?, correo = ? WHERE id = ?";
