@@ -13,7 +13,7 @@ if (!isset($_GET['id'])) {
 
 $id = intval($_GET['id']);
 
-// Procesar formulario al enviarlo
+// Procesar formulario al enviarlo jeje
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nombre = $_POST['nombre'] ?? '';
     $apellido = $_POST['apellido'] ?? '';
